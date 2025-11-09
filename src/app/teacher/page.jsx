@@ -56,8 +56,9 @@ export default function TeacherPage() {
     // -------------------- Open modal --------------------
     const openModal = (record) => {
         setSelected(record);
+        // Cập nhật giá trị cho form
         form.setFieldsValue({
-            nhanXet: record.nhanXet || '',
+            nhanXetGiaoVien: record.nhanXetGiaoVien || '',
             ghiChu: record.ghiChu || '',
         });
         setModalVisible(true);
@@ -93,23 +94,12 @@ export default function TeacherPage() {
         }
     };
 
-
     // -------------------- Table columns --------------------
     const columns = [
         {title: 'Họ tên', dataIndex: 'hoTen', key: 'hoTen'},
         {title: 'Lớp', dataIndex: 'lop', key: 'lop'},
-        {
-            title: 'Ngày sinh',
-            dataIndex: 'ngaySinh',
-            key: 'ngaySinh',
-            render: text => text,
-        },
-        {
-            title: 'Giới tính',
-            dataIndex: 'laNam',
-            key: 'laNam',
-            render: (val) => (val ? 'Nam' : 'Nữ'),
-        },
+        {title: 'Ngày sinh', dataIndex: 'ngaySinh', key: 'ngaySinh', render: text => text},
+        {title: 'Giới tính', dataIndex: 'laNam', key: 'laNam', render: val => (val ? 'Nam' : 'Nữ')},
         {
             title: 'Điểm Holland',
             children: [
@@ -125,7 +115,7 @@ export default function TeacherPage() {
             title: 'Nhóm nổi bật',
             dataIndex: 'assessmentResult',
             key: 'assessmentResult',
-            render: (val) => (
+            render: val => (
                 <Tag color="blue" style={{fontSize: 14, padding: '4px 8px'}}>
                     {val}
                 </Tag>
@@ -163,7 +153,7 @@ export default function TeacherPage() {
                     placeholder="Tìm theo họ tên hoặc lớp..."
                     allowClear
                     value={search}
-                    onChange={(e) => handleSearch(e.target.value)}
+                    onChange={e => handleSearch(e.target.value)}
                     style={{width: 400}}
                 />
             </Card>
@@ -198,34 +188,29 @@ export default function TeacherPage() {
                                         <Descriptions.Item label="Họ tên">{selected.hoTen}</Descriptions.Item>
                                         <Descriptions.Item label="Lớp">{selected.lop}</Descriptions.Item>
                                         <Descriptions.Item label="Ngày sinh">{selected.ngaySinh}</Descriptions.Item>
-                                        <Descriptions.Item label="Giới tính">
-                                            {selected.laNam ? 'Nam' : 'Nữ'}
-                                        </Descriptions.Item>
+                                        <Descriptions.Item
+                                            label="Giới tính">{selected.laNam ? 'Nam' : 'Nữ'}</Descriptions.Item>
                                         <Descriptions.Item label="Sở thích">{selected.soThich}</Descriptions.Item>
-                                        <Descriptions.Item label="Môn học yêu thích">
-                                            {selected.monHocYeuThich}
-                                        </Descriptions.Item>
+                                        <Descriptions.Item
+                                            label="Môn học yêu thích">{selected.monHocYeuThich}</Descriptions.Item>
                                         <Descriptions.Item label="Điểm mạnh">{selected.diemManh}</Descriptions.Item>
                                         <Descriptions.Item label="Điểm yếu">{selected.diemYeu}</Descriptions.Item>
-                                        <Descriptions.Item label="Nghề mong muốn">
-                                            {selected.ngheNghiepMongMuon}
-                                        </Descriptions.Item>
+                                        <Descriptions.Item
+                                            label="Nghề mong muốn">{selected.ngheNghiepMongMuon}</Descriptions.Item>
                                         <Descriptions.Item label="Nhóm nổi bật">
                                             <Tag color="blue">{selected.assessmentResult}</Tag>
                                         </Descriptions.Item>
                                         <Descriptions.Item label="Điểm chi tiết">
-                                            R: {selected.realisticScore}, I: {selected.investigativeScore}, A:{' '}
-                                            {selected.artisticScore}, S: {selected.socialScore}, E:{' '}
-                                            {selected.enterprisingScore}, C: {selected.conventionalScore}
+                                            R: {selected.realisticScore}, I: {selected.investigativeScore},
+                                            A: {selected.artisticScore}, S: {selected.socialScore},
+                                            E: {selected.enterprisingScore}, C: {selected.conventionalScore}
                                         </Descriptions.Item>
                                         <Descriptions.Item label="Mô tả nhóm">
-                                            {selected.assessmentResult
-                                                ?.split(',')
-                                                .map((t) => (
-                                                    <p key={t}>
-                                                        <strong>{t.trim()}</strong>: {hollandDescriptions[t.trim()]}
-                                                    </p>
-                                                ))}
+                                            {selected.assessmentResult?.split(',').map(t => (
+                                                <p key={t}>
+                                                    <strong>{t.trim()}</strong>: {hollandDescriptions[t.trim()]}
+                                                </p>
+                                            ))}
                                         </Descriptions.Item>
                                     </Descriptions>
                                 ),
