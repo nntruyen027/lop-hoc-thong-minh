@@ -1,91 +1,111 @@
-'use client';
+"use client";
 
-import {useState} from 'react';
-import {useRouter} from 'next/navigation';
-import {Box, Button, Paper, TextField, Typography} from '@mui/material';
-import axios from 'axios';
+import {Col, message, Row} from "antd";
+import {useForm} from "antd/es/form/Form";
+import {useState} from "react";
+import {dangKyGiaoVien, login} from "@/services/auth";
+
+import LoginCarousel from "./LoginCarousel";
+import LoginForm from "./LoginForm";
+import RegisterForm from "./RegisterForm";
+import {useRouter} from "next/navigation";
 
 export default function LoginPage() {
+
+    const [api, contextHolder] = message.useMessage();
+    const [formLogin] = useForm();
+    const [formRegister] = useForm();
     const router = useRouter();
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
+    const [isRegister, setIsRegister] = useState(false);
 
+    const onFinishLogin = async () => {
         try {
-            const res = await axios.post(`${process.env.NEXT_PUBLIC_BE}/auth/login`, {
-                username,
-                password,
-            });
-
-            const {token} = res.data;
-
-            if (token) {
-                localStorage.setItem('jwtToken', token);
-                router.replace('/teacher'); // redirect về trang chủ giáo viên
+            const {token, user} = await login(formLogin.getFieldValue()?.username, formLogin.getFieldValue()?.password);
+            api.success("Đăng nhập thành công");
+            if (user.role === 'TEACHER') {
+                router.push("/giao-vien");
+            } else if (user.role === 'ADMIN') {
+                router.push("/quan-tri-vien/dashboard");
             } else {
-                setError('Login failed: token not received');
+                router.push("/hoc-sinh");
             }
-        } catch (err) {
-            console.error(err);
-            setError('Tên đăng nhập hoặc mật khẩu không đúng');
+
+        } catch (e) {
+            api.error(e.message);
+        }
+    };
+
+    const onFinishRegister = async () => {
+        try {
+            await dangKyGiaoVien(formRegister.getFieldValue());
+            api.success("Đăng ký thành công");
+            setIsRegister(false);
+        } catch (e) {
+            api.error(e.message);
         }
     };
 
     return (
-        <Box
-            sx={{
-                height: '100vh',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: '#f5f5f5',
-            }}
-        >
-            <Paper sx={{p: 4, width: 400}} elevation={3}>
-                <Typography variant="h5" component="h1" align="center" gutterBottom>
-                    Sổ tay chủ nhiệm điện tử
-                </Typography>
+        <>
+            {contextHolder}
 
-                {error && (
-                    <Typography color="error" align="center" sx={{mb: 2}}>
-                        {error}
-                    </Typography>
-                )}
+            <div
+                style={{
+                    width: "200%",
+                    height: "100vh",
+                    display: "flex",
+                    transition: "transform 0.6s ease",
+                    transform: isRegister ? "translateX(-50%)" : "translateX(0)"
+                }}
+            >
 
-                <form onSubmit={handleLogin}>
-                    <TextField
-                        label="Tên đăng nhập"
-                        variant="outlined"
-                        fullWidth
-                        margin="normal"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        required
-                    />
-                    <TextField
-                        label="Mật khẩu"
-                        variant="outlined"
-                        type="password"
-                        fullWidth
-                        margin="normal"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
-                    <Button
-                        type="submit"
-                        variant="contained"
-                        color="primary"
-                        fullWidth
-                        sx={{mt: 2}}
-                    >
-                        Đăng nhập
-                    </Button>
-                </form>
-            </Paper>
-        </Box>
+                {/* Layout 1 */}
+                <div style={{width: "50%", height: "100vh"}}>
+                    <Row style={{height: "100vh"}}>
+                        <Col span={12} style={{padding: 0}}>
+                            <LoginCarousel/>
+                        </Col>
+
+                        <Col span={12} style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center"
+                        }}>
+                            <LoginForm
+                                form={formLogin}
+                                onLogin={onFinishLogin}
+                                onSwitch={() => setIsRegister(true)}
+                            />
+                        </Col>
+                    </Row>
+                </div>
+
+                {/* Layout 2 */}
+                <div style={{width: "50%", height: "100vh"}}>
+                    <Row style={{height: "100vh"}}>
+                        <Col span={12} style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            maxHeight: "100vh",
+                            overflowY: "auto",
+
+                        }}>
+                            <RegisterForm
+                                form={formRegister}
+                                onRegister={onFinishRegister}
+                                onSwitch={() => setIsRegister(false)}
+                            />
+                        </Col>
+
+                        <Col span={12} style={{padding: 0}}>
+                            <LoginCarousel/>
+                        </Col>
+                    </Row>
+                </div>
+
+            </div>
+        </>
     );
 }
