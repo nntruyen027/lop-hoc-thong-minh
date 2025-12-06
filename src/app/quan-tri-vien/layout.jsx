@@ -1,4 +1,5 @@
 'use client';
+
 import {Avatar, Button, Dropdown, Layout, Menu, theme, Typography} from 'antd'
 import {
     BarChartOutlined,
@@ -22,25 +23,15 @@ const roleTrans = {
 }
 
 const items = [
+    {key: '/quan-tri-vien/dashboard', label: 'Dashboard', icon: <BarChartOutlined/>},
     {
-        key: '/quan-tri-vien/dashboard',
-        label: 'Dashboard',
-        icon: <BarChartOutlined/>,
-    },
-    {
-        key: 'quan-ly-nguoi-dung',
-        label: 'Quản lý người dùng',
-        icon: <UsergroupAddOutlined/>,
-        children: [
+        key: 'quan-ly-nguoi-dung', label: 'Quản lý người dùng', icon: <UsergroupAddOutlined/>, children: [
             {key: '/quan-tri-vien/giao-vien', label: 'Giáo viên'},
             {key: '/quan-tri-vien/hoc-sinh', label: 'Học sinh'}
         ]
     },
     {
-        key: 'danh-muc',
-        label: 'Quản lý danh mục',
-        icon: <TableOutlined/>,
-        children: [
+        key: 'danh-muc', label: 'Quản lý danh mục', icon: <TableOutlined/>, children: [
             {key: '/quan-tri-vien/tinh', label: 'Tỉnh/Thành phố'},
             {key: '/quan-tri-vien/xa', label: 'Xã/Phường'},
             {key: '/quan-tri-vien/truong', label: 'Trường'},
@@ -51,37 +42,33 @@ const items = [
 
 export default function RootLayout({children}) {
     const [collapsed, setCollapsed] = useState(false);
+    const [userInfo, setUserInfo] = useState(null);
     const router = useRouter();
-    const {
-        token: {colorBgContainer, borderRadiusLG},
-    } = theme.useToken();
+    const {token: {colorBgContainer, borderRadiusLG}} = theme.useToken();
 
     useEffect(() => {
-        const role = JSON.parse(localStorage.getItem('userInfo'))?.role || '';
-        if (role != 'ADMIN') {
-            router.replace('/login');
-        }
+        // chỉ chạy trên client
+        const info = JSON.parse(localStorage.getItem('userInfo')) || {};
+        if (info.role !== 'ADMIN') router.replace('/login');
+        setUserInfo(info);
     }, []);
 
-    const userInfo = JSON.parse(localStorage.getItem("userInfo")) || {};
+    if (!userInfo) return null; // tránh render server
+
     const userRole = roleTrans[userInfo.role] || 'Người dùng';
     const userName = userInfo.hoTen || 'Người dùng';
 
     const userMenu = (
         <Menu>
-            <Menu.Item key="profile" icon={<UserOutlined/>} onClick={() => alert('Thông tin tài khoản')}>
-                Thông tin tài khoản
-            </Menu.Item>
-            <Menu.Item key="password" icon={<SafetyOutlined/>} onClick={() => alert('Đổi mật khẩu')}>
-                Đổi mật khẩu
-            </Menu.Item>
+            <Menu.Item key="profile" icon={<UserOutlined/>} onClick={() => alert('Thông tin tài khoản')}>Thông tin tài
+                khoản</Menu.Item>
+            <Menu.Item key="password" icon={<SafetyOutlined/>} onClick={() => alert('Đổi mật khẩu')}>Đổi mật
+                khẩu</Menu.Item>
             <Menu.Item key="logout" icon={<LogoutOutlined/>} onClick={() => {
                 localStorage.removeItem("jwtToken");
                 localStorage.removeItem("userInfo");
                 router.push('/login');
-            }}>
-                Đăng xuất
-            </Menu.Item>
+            }}>Đăng xuất</Menu.Item>
         </Menu>
     );
 
@@ -105,15 +92,11 @@ export default function RootLayout({children}) {
                 />
             </Sider>
             <Layout>
-                <Header className="flex justify-between items-center pl-0 pr-4"
-                        style={{paddingLeft: 0, background: colorBgContainer}}>
+                <Header className="flex justify-between items-center pl-0 pr-4" style={{background: colorBgContainer}}>
                     <div className="flex items-center gap-4">
-                        <Button
-                            type="text"
-                            icon={collapsed ? <MenuUnfoldOutlined/> : <MenuFoldOutlined/>}
-                            onClick={() => setCollapsed(!collapsed)}
-                            style={{fontSize: '16px', width: 64, height: 64}}
-                        />
+                        <Button type="text" icon={collapsed ? <MenuUnfoldOutlined/> : <MenuFoldOutlined/>}
+                                onClick={() => setCollapsed(!collapsed)}
+                                style={{fontSize: '16px', width: 64, height: 64}}/>
                         <Typography.Text style={{fontSize: '18px'}}>{userRole}</Typography.Text>
                     </div>
 
