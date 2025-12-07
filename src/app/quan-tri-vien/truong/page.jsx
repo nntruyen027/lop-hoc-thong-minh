@@ -2,10 +2,19 @@
 
 import {useEffect, useRef, useState} from "react";
 import {Button, Form, Input, message, Modal, Select, Table} from "antd";
-import {importXa, layDsXa, layFileImport, suaXa, themXa, xoaXa} from "@/services/quan-tri-vien/xa";
-import {getTinh} from "@/services/auth";
+import {
+    importTruong,
+    layDsTruong,
+    layFileImport,
+    suaTruong,
+    themTruong,
+    xoaTruong
+} from "@/services/quan-tri-vien/truong";
+import {getTinh, getXa} from "@/services/auth";
 import {useDebounce} from "@/hook/data";
 
+
+//TODO: fix lại khi cập nhật select chọn xã lại hiển thị mặc định là id thay vì tên
 export default function Page() {
 
     /* --------------------------------------------
@@ -18,18 +27,26 @@ export default function Page() {
     const [modalVisible, setModalVisible] = useState(false);
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
-    const [editingXa, setEditingXa] = useState(null);
+    const [editingTruong, setEditingTruong] = useState(null);
     const [deletingId, setDeletingId] = useState(null);
 
     const [importing, setImporting] = useState(false);
 
     const [dsTinh, setDsTinh] = useState([]);
+    const [tinhId, setTinhId] = useState(null);
+    const [dsXa, setDsXa] = useState([]);
+    const [searchXa, setSearchXa] = useState("");
     const [searchTinh, setSearchTinh] = useState("");
     const [tinhPagi, setTinhPagi] = useState({page: 1, limit: 20, total: 0});
+    const [xaPagi, setXaPagi] = useState({page: 1, limit: 20, total: 0});
     const [searchText, setSearchText] = useState("");
 
-
     const debouncedSearch = useDebounce(searchText, 400);
+
+    /* ---- NEW: MODAL CHỌN TỈNH ĐỂ DOWNLOAD TEMPLATE ---- */
+    const [openDownloadModal, setOpenDownloadModal] = useState(false);
+    const [downloadTinhId, setDownloadTinhId] = useState(null);
+
     /* --------------------------------------------
      * 2. REFS
      * -------------------------------------------- */
@@ -50,19 +67,33 @@ export default function Page() {
             render: (text, record, index) =>
                 (pagination.current - 1) * pagination.pageSize + index + 1
         },
-
-        {title: "Tên xã", dataIndex: "ten", key: "ten"},
+        {title: "Tên trường", dataIndex: "ten", key: "ten", width: 250},
+        {title: "Logo", dataIndex: "logo", key: "logo"},
+        {
+            title: 'Địa chỉ chi tiết',
+            dataIndex: "diaChiChiTiet",
+            key: "diaChiChiTiet",
+            width: 200
+        },
+        {
+            title: "Tên xã",
+            dataIndex: "xa",
+            key: "xa",
+            width: 200,
+            render: (xa) => xa?.ten || ""
+        },
         {
             title: "Tên tỉnh",
-            dataIndex: "tinh",
+            dataIndex: "xa",
             key: "tinh",
-            render: (tinh) => tinh?.ten || ""
+            width: 200,
+            render: (xa) => xa?.tinh?.ten || ""
         },
+
         {title: "Ghi chú", dataIndex: "ghiChu", key: "ghiChu"},
         {
             title: "Hành động",
             key: "action",
-
             render: (_, record) => (
                 <>
                     <Button type="link" onClick={() => handleEdit(record)}>Sửa</Button>
@@ -79,7 +110,7 @@ export default function Page() {
     const fetchData = async (page = 1, pageSize = 10, search = "") => {
         setLoading(true);
         try {
-            const res = await layDsXa({page, limit: pageSize, search});
+            const res = await layDsTruong({page, limit: pageSize, search});
             setData(res.data || []);
             setPagination({
                 current: res.page || page,
@@ -87,7 +118,7 @@ export default function Page() {
                 total: res.totalElements || 0,
             });
         } catch (e) {
-            message.error(e.message || "Lỗi khi tải danh sách xã");
+            message.error(e.message || "Lỗi khi tải danh sách trường");
         } finally {
             setLoading(false);
         }
@@ -101,18 +132,25 @@ export default function Page() {
         setTinhPagi({page, limit: tinhPagi.limit, total: result.total || 0});
     };
 
+    const fetchXa = async (reset = false) => {
+        if (!tinhId) return;
+        const page = reset ? 1 : xaPagi.page;
+        const result = await getXa(searchXa, tinhId, page, xaPagi.limit);
+        setDsXa(reset ? result.dsXa : [...dsXa, ...result.dsXa]);
+        setXaPagi({page, limit: xaPagi.limit, total: result.total || 0});
+    };
+
 
     /* --------------------------------------------
      * 5. CRUD HANDLERS
      * -------------------------------------------- */
     const handleEdit = (record) => {
-        setEditingXa(record);
-
+        setEditingTruong(record);
         form.setFieldsValue({
             ...record,
-            tinhId: record.tinh?.id || null,
+            tinhId: record.xa?.tinh?.id || null,
+            xaId: record.xa?.id || null,
         });
-
         setModalVisible(true);
     };
 
@@ -125,17 +163,17 @@ export default function Page() {
         try {
             const values = await form.validateFields();
 
-            if (editingXa) {
-                await suaXa(editingXa.id, values);
+            if (editingTruong) {
+                await suaTruong(editingTruong.id, values);
                 message.success("Cập nhật thành công");
             } else {
-                await themXa(values);
-                message.success("Thêm xã thành công");
+                await themTruong(values);
+                message.success("Thêm trường thành công");
             }
 
             setModalVisible(false);
             form.resetFields();
-            setEditingXa(null);
+            setEditingTruong(null);
             fetchData(pagination.current, pagination.pageSize);
 
         } catch (e) {
@@ -143,17 +181,43 @@ export default function Page() {
         }
     };
 
-
     /* --------------------------------------------
      * 6. DOWNLOAD / IMPORT FILE
      * -------------------------------------------- */
+
+    // **NEW: Mở modal chọn tỉnh**
+    const openDownload = () => {
+        setOpenDownloadModal(true);
+        setDownloadTinhId(null);
+        setDsTinh([]);
+        setTinhPagi({page: 1, limit: 20, total: 0});
+        fetchTinh(true);
+    };
+
+    // **NEW: Xử lý tải file import**
     const handleDownloadTemplate = async () => {
+        if (!downloadTinhId) {
+            message.warning("Vui lòng chọn tỉnh!");
+            return;
+        }
+
         try {
-            await layFileImport();
+            const res = await layFileImport(downloadTinhId); // axios blob
+
+            const url = window.URL.createObjectURL(new Blob([res]));
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "mau_import_truong.xlsx";
+            a.click();
+            window.URL.revokeObjectURL(url);
+
+            setOpenDownloadModal(false);
+
         } catch (e) {
-            message.error(e.message);
+            message.error("Không thể tải file mẫu!");
         }
     };
+
 
     const handleImportFile = async (e) => {
         const file = e.target.files[0];
@@ -164,7 +228,7 @@ export default function Page() {
 
         try {
             setImporting(true);
-            await importXa(formData);
+            await importTruong(formData);
             message.success("Import thành công");
             fetchData(pagination.current, pagination.pageSize);
         } catch (err) {
@@ -177,7 +241,7 @@ export default function Page() {
 
 
     /* --------------------------------------------
-     * 7. INFINITE SCROLL SELECT TỈNH
+     * 7. INFINITE SCROLL SELECT
      * -------------------------------------------- */
     const handleTinhScroll = (e) => {
         const target = e.target;
@@ -186,6 +250,13 @@ export default function Page() {
             dsTinh.length < tinhPagi.total
         ) {
             setTinhPagi(prev => ({...prev, page: prev.page + 1}));
+        }
+    };
+
+    const handleXaScroll = (e) => {
+        const target = e.target;
+        if (target.scrollTop + target.offsetHeight >= target.scrollHeight - 5 && dsXa.length < xaPagi.total) {
+            setXaPagi(prev => ({...prev, page: prev.page + 1}));
         }
     };
 
@@ -198,14 +269,16 @@ export default function Page() {
     }, []);
 
     useEffect(() => {
+        if (tinhId) fetchXa(true);
+    }, [tinhId]);
+
+    useEffect(() => {
         fetchData(1, pagination.pageSize, debouncedSearch);
     }, [debouncedSearch]);
 
     useEffect(() => {
         if (searchTinhRef.current) clearTimeout(searchTinhRef.current);
-
         searchTinhRef.current = setTimeout(() => fetchTinh(true), 300);
-
         return () => clearTimeout(searchTinhRef.current);
     }, [searchTinh]);
 
@@ -227,13 +300,13 @@ export default function Page() {
                 justifyContent: "space-between",
                 alignItems: "center"
             }}>
+
                 {/* SEARCH BOX */}
                 <Input.Search
-                    placeholder="Tìm kiếm xã..."
+                    placeholder="Tìm kiếm trường..."
                     allowClear
                     style={{width: 300}}
                     onChange={(e) => setSearchText(e.target.value)}
-
                 />
 
                 {/* ACTION BUTTONS */}
@@ -243,13 +316,14 @@ export default function Page() {
                         onClick={() => {
                             setModalVisible(true);
                             form.resetFields();
-                            setEditingXa(null);
+                            setEditingTruong(null);
                         }}
                     >
-                        Thêm xã
+                        Thêm trường
                     </Button>
 
-                    <Button onClick={handleDownloadTemplate}>Tải file mẫu</Button>
+                    {/* NEW: Mở modal chọn tỉnh */}
+                    <Button onClick={openDownload}>Tải file mẫu</Button>
 
                     <Button onClick={() => fileInputRef.current.click()} loading={importing}>
                         Import file
@@ -277,49 +351,74 @@ export default function Page() {
 
             {/* ADD / EDIT MODAL */}
             <Modal
-                title={editingXa ? "Sửa xã" : "Thêm xã"}
+                title={editingTruong ? "Sửa trường" : "Thêm trường"}
                 open={modalVisible}
                 onOk={handleOk}
                 onCancel={() => {
                     setModalVisible(false);
                     form.resetFields();
-                    setEditingXa(null);
+                    setEditingTruong(null);
                 }}
             >
                 <Form form={form} layout="vertical">
-                    <Form.Item
-                        label="Tên xã"
-                        name="ten"
-                        rules={[{required: true, message: "Vui lòng nhập tên xã"}]}
-                    >
+
+                    <Form.Item label="Tên trường" name="ten" rules={[{required: true}]}>
                         <Input/>
                     </Form.Item>
 
-                    <Form.Item
-                        label="Tỉnh/Thành phố"
-                        name="tinhId"
-                        rules={[{required: true, message: "Vui lòng chọn tỉnh/thành phố"}]}
-                    >
+                    <Form.Item label="Tỉnh/Thành phố" name="tinhId" rules={[{required: true}]}>
                         <Select
                             showSearch
                             placeholder="Chọn tỉnh/thành phố"
-                            onSearch={setSearchTinh}
+                            value={form.getFieldValue("tinhId")}
+                            onChange={(val) => {
+                                setTinhId(val);
+                                form.setFieldsValue({xaId: null});
+                                setDsXa([]);
+                                setXaPagi({page: 1, limit: 20, total: 0});
+                            }}
+                            onSearch={(val) => setSearchTinh(val)}
                             filterOption={false}
-                            dropdownStyle={{maxHeight: 200, overflowY: "auto"}}
+                            notFoundContent={null}
                             onPopupScroll={handleTinhScroll}
                         >
                             {dsTinh.map(t => (
-                                <Select.Option key={t.id} value={t.id}>
-                                    {t.ten}
-                                </Select.Option>
+                                <Select.Option key={t.id} value={t.id}>{t.ten}</Select.Option>
                             ))}
                         </Select>
                     </Form.Item>
 
-                    <Form.Item label="Ghi chú" name="ghiChu">
+                    <Form.Item label="Xã/Phường" name="xaId" rules={[{required: true}]}>
+                        <Select
+                            showSearch
+                            placeholder="Chọn xã/phường"
+                            disabled={!dsXa.length}
+                            value={form.getFieldValue("xaId")}
+                            onSearch={(val) => setSearchXa(val)}
+                            filterOption={false}
+                            dropdownStyle={{maxHeight: 200, overflowY: "auto"}}
+                            onPopupScroll={handleXaScroll}
+                        >
+                            {dsXa.map(x => (
+                                <Select.Option key={x.id} value={x.id}>{x.ten}</Select.Option>
+                            ))}
+                        </Select>
+                    </Form.Item>
+
+                    <Form.Item label="Địa chỉ chi tiết" name="diaChiChiTiet">
                         <Input/>
                     </Form.Item>
+
+                    <Form.Item label="Hình ảnh" name="hinhAnh">
+                        <Input placeholder="Nhập link hình ảnh..."/>
+                    </Form.Item>
+
+                    <Form.Item label="Logo" name="logo">
+                        <Input placeholder="Nhập link logo..."/>
+                    </Form.Item>
+
                 </Form>
+
             </Modal>
 
             {/* DELETE CONFIRM MODAL */}
@@ -328,7 +427,7 @@ export default function Page() {
                 open={deleteModalVisible}
                 onOk={async () => {
                     try {
-                        await xoaXa(deletingId);
+                        await xoaTruong(deletingId);
                         message.success("Xóa thành công");
 
                         if (data.length === 1 && pagination.current > 1)
@@ -348,8 +447,36 @@ export default function Page() {
                     setDeletingId(null);
                 }}
             >
-                Bạn có chắc muốn xóa xã này không?
+                Bạn có chắc muốn xóa trường này không?
             </Modal>
+
+            {/* NEW: MODAL CHỌN TỈNH ĐỂ DOWNLOAD TEMPLATE */}
+            <Modal
+                title="Chọn tỉnh để tải file mẫu"
+                open={openDownloadModal}
+                onOk={handleDownloadTemplate}
+                onCancel={() => setOpenDownloadModal(false)}
+                okButtonProps={{disabled: !downloadTinhId}}
+            >
+                <Form layout="vertical">
+                    <Form.Item label="Tỉnh/Thành phố">
+                        <Select
+                            showSearch
+                            placeholder="Chọn tỉnh/thành phố"
+                            onChange={val => setDownloadTinhId(val)}
+                            onSearch={val => setSearchTinh(val)}
+                            filterOption={false}
+                            notFoundContent={null}
+                            onPopupScroll={handleTinhScroll}
+                        >
+                            {dsTinh.map(t => (
+                                <Select.Option key={t.id} value={t.id}>{t.ten}</Select.Option>
+                            ))}
+                        </Select>
+                    </Form.Item>
+                </Form>
+            </Modal>
+
         </div>
     );
 }

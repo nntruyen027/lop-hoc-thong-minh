@@ -157,7 +157,14 @@ export default function Page() {
     // TABLE COLUMNS
     // -----------------------------
     const columns = [
-        {title: "ID", dataIndex: "id", key: "id", width: 80},
+        {
+            title: "#",
+            key: "stt",
+            width: 80,
+            align: "right",
+            render: (text, record, index) =>
+                (pagination.current - 1) * pagination.pageSize + index + 1
+        },
         {title: "Tên tỉnh", dataIndex: "ten", key: "ten"},
         {title: "Ghi chú", dataIndex: "ghiChu", key: "ghiChu"},
         {
