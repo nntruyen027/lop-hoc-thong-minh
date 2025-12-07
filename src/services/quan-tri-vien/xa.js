@@ -1,17 +1,17 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_BE + '/quan-tri/tinh',
+    baseURL: process.env.NEXT_PUBLIC_BE + '/quan-tri/xa',
     headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${localStorage.getItem("jwtToken")}`,
     }
 });
 
-export async function layDsTinh({search, page, limit}) {
+export async function layDsXa({search, tinhId, page, limit}) {
     try {
         const res = await api.get("", {
-            params: {search, page, limit}
+            params: {search, tinhId, page, limit}
         })
         return res.data;
     } catch (e) {
@@ -19,25 +19,25 @@ export async function layDsTinh({search, page, limit}) {
     }
 }
 
-export async function themTinh(tinh) {
+export async function themXa(xa) {
     try {
-        const res = await api.post("", JSON.stringify(tinh));
+        const res = await api.post("", JSON.stringify(xa));
         return res.data;
     } catch (e) {
         throw new Error(e.response?.data?.message);
     }
 }
 
-export async function suaTinh(id, tinh) {
+export async function suaXa(id, xa) {
     try {
-        const res = await api.put(`/${id}`, JSON.stringify(tinh));
+        const res = await api.put(`/${id}`, JSON.stringify(xa));
         return res.data;
     } catch (e) {
         throw new Error(e.response?.data?.message);
     }
 }
 
-export async function xoaTinh(id) {
+export async function xoaXa(id) {
     try {
         await api.delete(`/${id}`);
     } catch (e) {
@@ -84,11 +84,11 @@ export async function layFileImport() {
 }
 
 
-export async function importTinh(formData) {
+export async function importXa(formData) {
     try {
         // không dùng api.headers mặc định "Content-Type"
         const response = await axios.post(
-            process.env.NEXT_PUBLIC_BE + '/quan-tri/tinh/importer',
+            process.env.NEXT_PUBLIC_BE + '/quan-tri/xa/importer',
             formData,
             {
                 headers: {

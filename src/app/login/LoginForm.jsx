@@ -17,7 +17,7 @@ export default function LoginForm({form, onLogin, onSwitch}) {
         }}>
             <Typography.Title level={2} style={{textAlign: 'center'}}>Đăng nhập</Typography.Title>
 
-            <Form form={form} layout="vertical" size="middle" autoComplete="off">
+            <Form onFinish={onLogin} form={form} layout="vertical" size="middle" autoComplete="off">
                 <Form.Item
                     label="Tên tài khoản"
                     name="username"
@@ -34,7 +34,7 @@ export default function LoginForm({form, onLogin, onSwitch}) {
                     <Input.Password/>
                 </Form.Item>
 
-                <Button type="primary" block onClick={onLogin}>
+                <Button type="primary" block htmlType={'submit'}>
                     Đăng nhập
                 </Button>
 

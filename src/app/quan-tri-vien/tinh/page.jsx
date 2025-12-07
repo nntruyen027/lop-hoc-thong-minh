@@ -3,34 +3,50 @@
 import {useEffect, useRef, useState} from "react";
 import {Button, Form, Input, message, Modal, Table} from "antd";
 import {importTinh, layDsTinh, layFileImport, suaTinh, themTinh, xoaTinh} from "@/services/quan-tri-vien/tinh";
+import {useDebounce} from "@/hook/data";
+
 
 export default function Page() {
+
+    // -----------------------------
+    // STATE
+    // -----------------------------
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [pagination, setPagination] = useState({current: 1, pageSize: 10, total: 0});
 
     const [modalVisible, setModalVisible] = useState(false);
     const [editingTinh, setEditingTinh] = useState(null);
+
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const [deletingId, setDeletingId] = useState(null);
 
-    const [form] = Form.useForm();
     const [importing, setImporting] = useState(false);
 
-    const fileInputRef = useRef(null);
+    // Search
+    const [searchText, setSearchText] = useState("");
+    const debouncedSearch = useDebounce(searchText, 400);
 
-    // Load danh sách tỉnh
+    // -----------------------------
+    // REF + FORM
+    // -----------------------------
+    const fileInputRef = useRef(null);
+    const [form] = Form.useForm();
+
+    // -----------------------------
+    // FETCH DATA
+    // -----------------------------
     const fetchData = async (page = 1, pageSize = 10, search = "") => {
         setLoading(true);
         try {
             const res = await layDsTinh({page, limit: pageSize, search});
             setData(res.data || []);
-            setPagination(prev => ({
-                ...prev,
+
+            setPagination({
                 current: res.page || page,
                 pageSize: res.size || pageSize,
                 total: res.totalElements || 0,
-            }));
+            });
         } catch (e) {
             message.error(e.message || "Lỗi khi tải danh sách tỉnh");
         } finally {
@@ -39,13 +55,21 @@ export default function Page() {
     };
 
     useEffect(() => {
+        fetchData(1, pagination.pageSize, debouncedSearch);
+    }, [debouncedSearch]);
+
+    useEffect(() => {
         fetchData();
     }, []);
 
-    // Thêm / Sửa tỉnh
+
+    // -----------------------------
+    // HANDLERS: ADD / EDIT
+    // -----------------------------
     const handleOk = async () => {
         try {
             const values = await form.validateFields();
+
             if (editingTinh) {
                 await suaTinh(editingTinh.id, values);
                 message.success("Cập nhật thành công");
@@ -53,10 +77,12 @@ export default function Page() {
                 await themTinh(values);
                 message.success("Thêm tỉnh thành công");
             }
+
             setModalVisible(false);
-            form.resetFields();
             setEditingTinh(null);
-            fetchData(pagination.current, pagination.pageSize);
+            form.resetFields();
+            fetchData(pagination.current, pagination.pageSize, debouncedSearch);
+
         } catch (e) {
             message.error(e.message || "Lỗi");
         }
@@ -68,16 +94,35 @@ export default function Page() {
         setModalVisible(true);
     };
 
+    // -----------------------------
+    // HANDLERS: DELETE
+    // -----------------------------
     const handleDelete = (id) => {
         setDeletingId(id);
         setDeleteModalVisible(true);
     };
 
-    const handleTableChange = (pag) => {
-        fetchData(pag.current, pag.pageSize);
+    const confirmDelete = async () => {
+        try {
+            await xoaTinh(deletingId);
+            message.success("Xóa thành công");
+
+            if (data.length === 1 && pagination.current > 1)
+                fetchData(pagination.current - 1, pagination.pageSize, debouncedSearch);
+            else
+                fetchData(pagination.current, pagination.pageSize, debouncedSearch);
+
+        } catch (e) {
+            message.error(e.message);
+        } finally {
+            setDeleteModalVisible(false);
+            setDeletingId(null);
+        }
     };
 
-    // Tải file mẫu
+    // -----------------------------
+    // HANDLERS: IMPORT / TEMPLATE
+    // -----------------------------
     const handleDownloadTemplate = async () => {
         try {
             await layFileImport();
@@ -86,7 +131,6 @@ export default function Page() {
         }
     };
 
-    // Import file
     const handleImportFile = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -97,17 +141,21 @@ export default function Page() {
         try {
             setImporting(true);
             await importTinh(formData);
+
             message.success("Import thành công");
-            fetchData(pagination.current, pagination.pageSize);
+            fetchData(pagination.current, pagination.pageSize, debouncedSearch);
+
         } catch (err) {
-            console.error("Upload error", err);
             message.error(err.message || "Lỗi import");
         } finally {
             setImporting(false);
-            e.target.value = null; // reset input
+            e.target.value = null;
         }
     };
 
+    // -----------------------------
+    // TABLE COLUMNS
+    // -----------------------------
     const columns = [
         {title: "ID", dataIndex: "id", key: "id", width: 80},
         {title: "Tên tỉnh", dataIndex: "ten", key: "ten"},
@@ -124,42 +172,69 @@ export default function Page() {
         },
     ];
 
+    // -----------------------------
+    // RENDER
+    // -----------------------------
     return (
         <div style={{padding: 16}}>
-            <div style={{marginBottom: 16, display: "flex", gap: 8}}>
-                <Button type="primary" onClick={() => {
-                    setModalVisible(true);
-                    form.resetFields();
-                    setEditingTinh(null);
-                }}>
-                    Thêm tỉnh
-                </Button>
-                <Button onClick={handleDownloadTemplate}>Tải file mẫu</Button>
-                <Button onClick={() => fileInputRef.current.click()} loading={importing}>
-                    Import file
-                </Button>
-                <input
-                    type="file"
-                    ref={fileInputRef}
-                    style={{display: "none"}}
-                    accept=".xlsx"
-                    onChange={handleImportFile}
+
+            {/* SEARCH + ACTION BUTTONS */}
+            <div
+                style={{
+                    marginBottom: 16,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center"
+                }}
+            >
+                {/* LEFT: SEARCH */}
+                <Input.Search
+                    placeholder="Tìm tỉnh..."
+                    allowClear
+                    style={{width: 300}}
+                    onChange={(e) => setSearchText(e.target.value)}
                 />
+
+                {/* RIGHT: BUTTONS */}
+                <div style={{display: "flex", gap: 8}}>
+                    <Button
+                        type="primary"
+                        onClick={() => {
+                            setModalVisible(true);
+                            setEditingTinh(null);
+                            form.resetFields();
+                        }}
+                    >
+                        Thêm tỉnh
+                    </Button>
+
+                    <Button onClick={handleDownloadTemplate}>Tải file mẫu</Button>
+
+                    <Button onClick={() => fileInputRef.current.click()} loading={importing}>
+                        Import file
+                    </Button>
+
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        style={{display: "none"}}
+                        accept=".xlsx"
+                        onChange={handleImportFile}
+                    />
+                </div>
             </div>
 
+            {/* TABLE */}
             <Table
                 rowKey="id"
                 columns={columns}
                 dataSource={data}
                 loading={loading}
-                pagination={{
-                    current: pagination.current,
-                    pageSize: pagination.pageSize,
-                    total: pagination.total,
-                }}
-                onChange={handleTableChange}
+                pagination={pagination}
+                onChange={(pag) => fetchData(pag.current, pag.pageSize, debouncedSearch)}
             />
 
+            {/* ADD/EDIT MODAL */}
             <Modal
                 title={editingTinh ? "Sửa tỉnh" : "Thêm tỉnh"}
                 open={modalVisible}
@@ -170,6 +245,7 @@ export default function Page() {
                     setEditingTinh(null);
                 }}
             >
+
                 <Form form={form} layout="vertical" initialValues={{ten: ""}}>
                     <Form.Item
                         label="Tên tỉnh"
@@ -178,29 +254,18 @@ export default function Page() {
                     >
                         <Input/>
                     </Form.Item>
-                    <Form.Item
-                        label="Ghi chú"
-                        name="ghiChu"
-                    >
+
+                    <Form.Item label="Ghi chú" name="ghiChu">
                         <Input/>
                     </Form.Item>
                 </Form>
             </Modal>
+
+            {/* DELETE CONFIRM MODAL */}
             <Modal
                 title="Xác nhận xóa"
                 open={deleteModalVisible}
-                onOk={async () => {
-                    try {
-                        await xoaTinh(deletingId);
-                        message.success("Xóa thành công");
-                        fetchData(pagination.current, pagination.pageSize);
-                    } catch (e) {
-                        message.error(e.message);
-                    } finally {
-                        setDeleteModalVisible(false);
-                        setDeletingId(null);
-                    }
-                }}
+                onOk={confirmDelete}
                 onCancel={() => {
                     setDeleteModalVisible(false);
                     setDeletingId(null);
