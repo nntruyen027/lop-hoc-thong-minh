@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
 import {Button, DatePicker, Divider, Form, Input, Radio, Select, Tabs, Typography} from "antd";
 import {useEffect, useRef, useState} from "react";
 import {getTinh, getXa} from "@/services/auth";
+import {isStrongPassword} from "@/utils/valid";
 
-//TODO: làm chức năng yêu cầu mật khẩu phức tạp
 export default function RegisterForm({form, onRegister, onSwitch}) {
     const [activeTab, setActiveTab] = useState("1");
     const [dsTinh, setDsTinh] = useState([]);
@@ -19,6 +19,7 @@ export default function RegisterForm({form, onRegister, onSwitch}) {
     const searchTinhRef = useRef(null);
     const searchXaRef = useRef(null);
 
+    // ---------------- FETCH DATA ----------------
     const fetchTinh = async (reset = false) => {
         const page = reset ? 1 : tinhPagi.page;
         const result = await getTinh(searchTinh, page, tinhPagi.limit);
@@ -34,6 +35,7 @@ export default function RegisterForm({form, onRegister, onSwitch}) {
         setXaPagi({page, limit: xaPagi.limit, total: result.total || 0});
     };
 
+    // ---------------- EFFECTS ----------------
     useEffect(() => {
         if (searchTinhRef.current) clearTimeout(searchTinhRef.current);
         searchTinhRef.current = setTimeout(() => fetchTinh(true), 300);
@@ -46,44 +48,30 @@ export default function RegisterForm({form, onRegister, onSwitch}) {
         return () => clearTimeout(searchXaRef.current);
     }, [searchXa, tinhId]);
 
-    // Scroll pagination
+    useEffect(() => {
+        if (tinhPagi.page > 1) fetchTinh();
+    }, [tinhPagi.page]);
+    useEffect(() => {
+        if (xaPagi.page > 1) fetchXa();
+    }, [xaPagi.page]);
+
+    // ---------------- SCROLL ----------------
     const handleTinhScroll = (e) => {
-        const target = e.target;
-        if (target.scrollTop + target.offsetHeight >= target.scrollHeight - 5 && dsTinh.length < tinhPagi.total) {
-            setTinhPagi((prev) => ({...prev, page: prev.page + 1}));
-        }
+        const t = e.target;
+        if (t.scrollTop + t.offsetHeight >= t.scrollHeight - 5 && dsTinh.length < tinhPagi.total)
+            setTinhPagi(prev => ({...prev, page: prev.page + 1}));
     };
 
     const handleXaScroll = (e) => {
-        const target = e.target;
-        if (target.scrollTop + target.offsetHeight >= target.scrollHeight - 5 && dsXa.length < xaPagi.total) {
-            setXaPagi((prev) => ({...prev, page: prev.page + 1}));
-        }
+        const t = e.target;
+        if (t.scrollTop + t.offsetHeight >= t.scrollHeight - 5 && dsXa.length < xaPagi.total)
+            setXaPagi(prev => ({...prev, page: prev.page + 1}));
     };
 
-    useEffect(() => {
-        if (tinhPagi.page > 1) {
-            const fetch = async () => {
-                await fetchTinh();
-            };
-            fetch();
-        }
-    }, [tinhPagi.page]);
-
-    useEffect(() => {
-        if (xaPagi.page > 1) {
-            const fetch = async () => {
-                await fetchXa();
-            };
-            fetch();
-        }
-    }, [xaPagi.page]);
-
+    // ---------------- VALIDATION ----------------
     const validateBasicTab = async () => {
         try {
-            await form.validateFields([
-                "hoTen", "ngaySinh", "laNam", "boMon", "chucVu", "tinhId", "xaId",
-            ]);
+            await form.validateFields(["hoTen", "ngaySinh", "laNam", "boMon", "chucVu", "tinhId", "xaId"]);
             return true;
         } catch {
             return false;
@@ -91,10 +79,7 @@ export default function RegisterForm({form, onRegister, onSwitch}) {
     };
 
     const handleTabChange = async (key) => {
-        if (key === "2") {
-            const valid = await validateBasicTab();
-            if (!valid) return setActiveTab("1");
-        }
+        if (key === "2" && !(await validateBasicTab())) return setActiveTab("1");
         setActiveTab(key);
     };
 
@@ -107,28 +92,23 @@ export default function RegisterForm({form, onRegister, onSwitch}) {
             await form.validateFields();
             onRegister();
         } catch {
-            const fieldsError = form.getFieldsError();
-            const basicTabFields = ["hoTen", "ngaySinh", "laNam", "boMon", "chucVu", "tinhId", "xaId"];
-            const hasErrorInTab1 = fieldsError.some(f => basicTabFields.includes(f.name[0]) && f.errors.length > 0);
-            if (hasErrorInTab1) setActiveTab("1");
+            const basicFields = ["hoTen", "ngaySinh", "laNam", "boMon", "chucVu", "tinhId", "xaId"];
+            if (form.getFieldsError().some(f => basicFields.includes(f.name[0]) && f.errors.length > 0))
+                setActiveTab("1");
         }
     };
 
+    // ---------------- RENDER ----------------
     return (
         <div style={{
-            width: "100%",
-            maxWidth: 400,
-            maxHeight: "100vh",
-            overflowY: "auto",
-            margin: "0 auto",
-            padding: "16px 16px 32px", // thêm padding-bottom
-            display: "flex",
-            flexDirection: "column",
-            scrollbarWidth: "none",
+            width: "100%", maxWidth: 400, maxHeight: "100vh", overflowY: "auto",
+            margin: "0 auto", padding: "16px 16px 32px", display: "flex",
+            flexDirection: "column", scrollbarWidth: "none"
         }} className={'hide-scrollbar'}>
             <Typography.Title level={2}>Đăng ký</Typography.Title>
             <Form form={form} layout="vertical" size="middle" autoComplete="off">
                 <Tabs activeKey={activeTab} onChange={handleTabChange}>
+                    {/* Thông tin cơ bản */}
                     <Tabs.TabPane tab="Thông tin cơ bản" key="1">
                         <Form.Item label="Họ tên" name="hoTen"
                                    rules={[{required: true, message: "Vui lòng nhập họ tên"}]}><Input/></Form.Item>
@@ -147,52 +127,47 @@ export default function RegisterForm({form, onRegister, onSwitch}) {
                                    rules={[{required: true, message: "Vui lòng nhập chức vụ"}]}><Input/></Form.Item>
                         <Form.Item label="Tỉnh/Thành phố" name="tinhId"
                                    rules={[{required: true, message: "Vui lòng chọn tỉnh/thành phố"}]}>
-                            <Select
-                                showSearch
-                                placeholder="Chọn tỉnh/thành phố"
-                                value={form.getFieldValue("tinhId")}
-                                onChange={(val) => {
-                                    setTinhId(val);
-                                    form.setFieldsValue({xaId: null});
-                                    setDsXa([]);
-                                    setXaPagi({page: 1, limit: 20, total: 0});
-                                }}
-                                onSearch={(val) => setSearchTinh(val)}
-                                filterOption={false}
-                                notFoundContent={null}
-                                dropdownStyle={{maxHeight: 200, overflowY: "auto"}}
-                                onPopupScroll={handleTinhScroll}
-                            >
+                            <Select showSearch placeholder="Chọn tỉnh/thành phố" value={form.getFieldValue("tinhId")}
+                                    onChange={(val) => {
+                                        setTinhId(val);
+                                        form.setFieldsValue({xaId: null});
+                                        setDsXa([]);
+                                        setXaPagi({page: 1, limit: 20, total: 0});
+                                    }}
+                                    onSearch={setSearchTinh} filterOption={false} notFoundContent={null}
+                                    dropdownStyle={{maxHeight: 200, overflowY: "auto"}}
+                                    onPopupScroll={handleTinhScroll}>
                                 {dsTinh.map(t => <Option key={t.id} value={t.id}>{t.ten}</Option>)}
                             </Select>
                         </Form.Item>
                         <Form.Item label="Xã/Phường" name="xaId"
                                    rules={[{required: true, message: "Vui lòng chọn xã/phường"}]}>
-                            <Select
-                                showSearch
-                                placeholder="Chọn xã/phường"
-                                value={form.getFieldValue("xaId")}
-                                disabled={!dsXa.length}
-                                onSearch={(val) => setSearchXa(val)}
-                                filterOption={false}
-                                notFoundContent={null}
-                                dropdownStyle={{maxHeight: 200, overflowY: "auto"}}
-                                onPopupScroll={handleXaScroll}
-                            >
+                            <Select showSearch placeholder="Chọn xã/phường" value={form.getFieldValue("xaId")}
+                                    disabled={!dsXa.length}
+                                    onSearch={setSearchXa} filterOption={false} notFoundContent={null}
+                                    dropdownStyle={{maxHeight: 200, overflowY: "auto"}}
+                                    onPopupScroll={handleXaScroll}>
                                 {dsXa.map(x => <Option key={x.id} value={x.id}>{x.ten}</Option>)}
                             </Select>
                         </Form.Item>
                         <Button type="primary" block onClick={nextTab}>Tiếp tục</Button>
                     </Tabs.TabPane>
+
+                    {/* Thông tin đăng nhập */}
                     <Tabs.TabPane tab="Thông tin đăng nhập" key="2">
                         <Form.Item label="Tên tài khoản" name="username" rules={[{
                             required: true,
                             message: "Vui lòng nhập tên tài khoản"
                         }]}><Input/></Form.Item>
-                        <Form.Item label="Mật khẩu" name="password" rules={[{
-                            required: true,
-                            message: "Vui lòng nhập mật khẩu"
-                        }]}><Input.Password/></Form.Item>
+                        <Form.Item label="Mật khẩu" name="password" rules={[
+                            {required: true, message: "Vui lòng nhập mật khẩu"},
+                            () => ({
+                                validator(_, value) {
+                                    if (!value || isStrongPassword(value)) return Promise.resolve();
+                                    return Promise.reject(new Error("Mật khẩu phải ≥8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt."));
+                                }
+                            })
+                        ]}><Input.Password/></Form.Item>
                         <Form.Item label="Nhập lại mật khẩu" name="repeatPass" dependencies={["password"]} rules={[
                             {required: true, message: "Vui lòng nhập lại mật khẩu"},
                             ({getFieldValue}) => ({

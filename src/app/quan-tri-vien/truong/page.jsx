@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect, useRef, useState} from "react";
-import {Button, Form, Input, message, Modal, Select, Table} from "antd";
+import {Button, Dropdown, Form, Input, message, Modal, Select, Table} from "antd";
 import {
     importTruong,
     layDsTruong,
@@ -12,9 +12,9 @@ import {
 } from "@/services/quan-tri-vien/truong";
 import {getTinh, getXa} from "@/services/auth";
 import {useDebounce} from "@/hook/data";
+import {EllipsisOutlined} from "@ant-design/icons";
 
 
-//TODO: fix lại khi cập nhật select chọn xã lại hiển thị mặc định là id thay vì tên
 export default function Page() {
 
     /* --------------------------------------------
@@ -92,15 +92,28 @@ export default function Page() {
 
         {title: "Ghi chú", dataIndex: "ghiChu", key: "ghiChu"},
         {
-            title: "Hành động",
-            key: "action",
-            render: (_, record) => (
-                <>
-                    <Button type="link" onClick={() => handleEdit(record)}>Sửa</Button>
-                    <Button type="link" danger onClick={() => handleDelete(record.id)}>Xóa</Button>
-                </>
-            ),
-        },
+            title: "Thao tác",
+            key: "thaoTac",
+            render: (_, record) => {
+                const items = [
+                    {
+                        key: "sua",
+                        label: "Cập nhật",
+                        onClick: () => handleEdit(record),
+                    },
+                    {
+                        key: "xoa",
+                        label: "Xóa",
+                        onClick: () => handleDelete(record.id)
+                    }
+                ]
+                return (
+                    <Dropdown menu={{items}} trigger={['click']}>
+                        <Button type="text" icon={<EllipsisOutlined/>}/>
+                    </Dropdown>
+                )
+            }
+        }
     ];
 
 
@@ -144,13 +157,26 @@ export default function Page() {
     /* --------------------------------------------
      * 5. CRUD HANDLERS
      * -------------------------------------------- */
-    const handleEdit = (record) => {
+    const handleEdit = async (record) => {
         setEditingTruong(record);
+
+        const tinh = record.xa?.tinh?.id;
+        const xa = record.xa?.id;
+
         form.setFieldsValue({
             ...record,
-            tinhId: record.xa?.tinh?.id || null,
-            xaId: record.xa?.id || null,
+            tinhId: tinh,
+            xaId: xa,
         });
+
+        setTinhId(tinh);
+
+        setDsXa([]);
+        setXaPagi({page: 1, limit: 20, total: 0});
+
+        const result = await getXa("", tinh, 1, 20);
+        setDsXa(result.dsXa || []);
+
         setModalVisible(true);
     };
 

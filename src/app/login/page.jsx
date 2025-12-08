@@ -97,7 +97,6 @@ export default function LoginPage() {
     }
 
 
-    // Màn hình lớn, giữ layout cũ với carousel + translateX
     const containerWidth = "200%";
     const translateX = isRegister ? "-50%" : "0";
 

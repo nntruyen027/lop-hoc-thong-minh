@@ -1,7 +1,8 @@
 'use client';
 
 import {useEffect, useRef, useState} from "react";
-import {Button, Form, Input, message, Modal, Table} from "antd";
+import {Button, Dropdown, Form, Input, message, Modal, Table} from "antd";
+import {EllipsisOutlined} from "@ant-design/icons";
 import {importTinh, layDsTinh, layFileImport, suaTinh, themTinh, xoaTinh} from "@/services/quan-tri-vien/tinh";
 import {useDebounce} from "@/hook/data";
 
@@ -168,16 +169,30 @@ export default function Page() {
         {title: "Tên tỉnh", dataIndex: "ten", key: "ten"},
         {title: "Ghi chú", dataIndex: "ghiChu", key: "ghiChu"},
         {
-            title: "Hành động",
-            key: "action",
-            render: (_, record) => (
-                <>
-                    <Button type="link" onClick={() => handleEdit(record)}>Sửa</Button>
-                    <Button type="link" danger onClick={() => handleDelete(record.id)}>Xóa</Button>
-                </>
-            ),
-        },
+            title: "Thao tác",
+            key: "thaoTac",
+            render: (_, record) => {
+                const items = [
+                    {
+                        key: "sua",
+                        label: "Cập nhật",
+                        onClick: () => handleEdit(record),
+                    },
+                    {
+                        key: "xoa",
+                        label: "Xóa",
+                        onClick: () => handleDelete(record.id)
+                    }
+                ]
+                return (
+                    <Dropdown menu={{items}} trigger={['click']}>
+                        <Button type="text" icon={<EllipsisOutlined/>}/>
+                    </Dropdown>
+                )
+            }
+        }
     ];
+
 
     // -----------------------------
     // RENDER
