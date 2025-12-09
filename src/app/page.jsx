@@ -8,7 +8,6 @@ export default function Home() {
     return (
         <div
             className="h-screen w-screen flex flex-col md:flex-row items-center justify-center gap-12 bg-cover bg-center"
-            style={{backgroundImage: "url('/image.jpg')"}}
         >
 
         </div>

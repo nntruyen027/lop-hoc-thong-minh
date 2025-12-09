@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect, useRef, useState} from "react";
-import {Button, Dropdown, Form, Input, message, Modal, Table} from "antd";
+import {App, Button, Dropdown, Form, Input, Modal, Table} from "antd";
 import {EllipsisOutlined} from "@ant-design/icons";
 import {importTinh, layDsTinh, layFileImport, suaTinh, themTinh, xoaTinh} from "@/services/quan-tri-vien/tinh";
 import {useDebounce} from "@/hook/data";
@@ -12,6 +12,8 @@ export default function Page() {
     // -----------------------------
     // STATE
     // -----------------------------
+    const {message} = App.useApp()
+
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [pagination, setPagination] = useState({current: 1, pageSize: 10, total: 0});

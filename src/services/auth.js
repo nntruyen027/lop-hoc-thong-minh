@@ -81,7 +81,7 @@ export async function getXa(search, tinhId, page = 1, limit = 10) {
 
 export async function dangKyGiaoVien(body) {
     try {
-        const res = await api.post("/dang-ky-giao-vien", body);
+        const res = await api.post("/dang-ky-giao-vien", body,);
         return res.data;
 
         // Ví dụ res data
@@ -97,5 +97,17 @@ export async function dangKyGiaoVien(body) {
         // }
     } catch (error) {
         throw new Error(error.response?.data?.message || "Không thể đăng ký");
+    }
+}
+
+export async function doiMatKhau(body) {
+    try {
+        const res = await api.put("/doi-mat-khau", body, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem("jwtToken")}`
+            }
+        });
+    } catch (error) {
+        throw new Error(error.response?.data?.message || "Lỗi khi đổi mật khẩu!")
     }
 }

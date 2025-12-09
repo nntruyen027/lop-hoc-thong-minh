@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect, useRef, useState} from "react";
-import {Button, Dropdown, Form, Input, message, Modal, Radio, Select, Table} from "antd";
+import {App, Button, Dropdown, Form, Input, Modal, Radio, Select, Table} from "antd";
 import {layDsGiaoVien, resetPassWord, suaGiaoVien, xoaGiaoVien} from "@/services/quan-tri-vien/giao-vien";
 import {getTinh, getXa} from "@/services/auth";
 import {useDebounce} from "@/hook/data";
@@ -11,6 +11,8 @@ import {EllipsisOutlined} from "@ant-design/icons";
 const {Option} = Select;
 
 export default function Page() {
+    const {message} = App.useApp()
+
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [pagination, setPagination] = useState({current: 1, pageSize: 10, total: 0});
@@ -296,11 +298,17 @@ export default function Page() {
                     <Button key="ok" type="primary" loading={resetLoading} onClick={handleResetPassword}>Lưu</Button>,
                 ]}
             >
+                {/* Fake inputs to block Chrome autofill */}
+                <input type="text" style={{display: "none"}} autoComplete="username"/>
+                <input type="password" style={{display: "none"}} autoComplete="new-password"/>
+
                 <p>Giáo viên: <b>{selectedGv?.hoTen}</b></p>
+
                 <Input.Password
                     placeholder="Nhập mật khẩu mới"
                     value={resetPassword}
                     onChange={(e) => setResetPassword(e.target.value)}
+                    autoComplete="new-password"
                     status={resetPassword && !isStrongPassword(resetPassword) ? "error" : ""}
                 />
             </Modal>

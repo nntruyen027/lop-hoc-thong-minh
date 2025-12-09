@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect, useRef, useState} from "react";
-import {Button, Dropdown, Form, Input, message, Modal, Select, Table} from "antd";
+import {App, Button, Dropdown, Form, Input, Modal, Select, Table} from "antd";
 import {importXa, layDsXa, layFileImport, suaXa, themXa, xoaXa} from "@/services/quan-tri-vien/xa";
 import {getTinh} from "@/services/auth";
 import {useDebounce} from "@/hook/data";
@@ -12,6 +12,7 @@ export default function Page() {
     /* --------------------------------------------
      * 1. STATE
      * -------------------------------------------- */
+    const {message} = App.useApp()
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [pagination, setPagination] = useState({current: 1, pageSize: 10, total: 0});

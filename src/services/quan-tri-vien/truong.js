@@ -19,6 +19,17 @@ export async function layDsTruong({search, page, limit}) {
     }
 }
 
+export async function layTatCaLopThuocTruong(id, {search, page, limit}) {
+    try {
+        const res = await api.get(`/${id}/lop`, {
+            params: {search, page, limit}
+        })
+        return res.data;
+    } catch (e) {
+        throw new Error(e.response?.data?.message);
+    }
+}
+
 export async function themTruong(truong) {
     try {
         const res = await api.post("", JSON.stringify(truong));
