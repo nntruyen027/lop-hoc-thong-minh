@@ -7,6 +7,7 @@ import {UserOutlined} from "@ant-design/icons";
 import dayjs from "dayjs";
 import {layThongTinCaNhanHocSinh} from "@/services/auth";
 import HuongNghiepLogTab from "@/app/hoc-sinh/dashboard/HuongNghiepLogTab";
+import HollandTab from "@/app/hoc-sinh/dashboard/HollandTab";
 
 export default function HocSinhDetailPage() {
     const {id} = useParams();
@@ -56,6 +57,16 @@ export default function HocSinhDetailPage() {
 
                     <HuongNghiepLogTab
                     />
+                </>
+            )
+        },
+        {
+
+            key: 'holland',
+            label: 'Nhật ký làm bài Holland',
+            children: (
+                <>
+                    <HollandTab/>
                 </>
             )
         }

@@ -8,6 +8,7 @@ import dayjs from "dayjs";
 
 import {layHocSinhTheoId} from "@/services/giao-vien/hoc-sinh";
 import HuongNghiepLogTab from "@/app/giao-vien/hoc-sinh/[id]/HuongNghiepLogTab";
+import HollandTab from "@/app/giao-vien/hoc-sinh/[id]/HollandTab";
 
 export default function HocSinhDetailPage() {
     const {id} = useParams();
@@ -58,6 +59,17 @@ export default function HocSinhDetailPage() {
                     <HuongNghiepLogTab
                         hocSinhId={id}
                     />
+
+                </>
+            )
+        },
+        {
+            key: 'holland',
+            label: 'Nhật ký Holland',
+            children: (
+                <>
+
+                    <HollandTab hsId={id}/>
                 </>
             )
         }

@@ -1,0 +1,32 @@
+[
+  {
+    "key": "R",
+    "name": "Realistic",
+    "description": "Thích làm việc với máy móc, vật liệu, công cụ; thích các công việc thực hành và kỹ thuật."
+  },
+  {
+    "key": "I",
+    "name": "Investigative",
+    "description": "Thích tìm hiểu, nghiên cứu, phân tích; thích công việc lý thuyết và khoa học."
+  },
+  {
+    "key": "A",
+    "name": "Artistic",
+    "description": "Sáng tạo, yêu thích nghệ thuật, thiết kế, văn hóa; không thích các công việc quá rập khuôn."
+  },
+  {
+    "key": "S",
+    "name": "Social",
+    "description": "Thích giúp đỡ người khác, hướng dẫn, giảng dạy; giao tiếp tốt."
+  },
+  {
+    "key": "E",
+    "name": "Enterprising",
+    "description": "Có khả năng lãnh đạo, thuyết phục, tổ chức; thích các công việc kinh doanh, quản lý."
+  },
+  {
+    "key": "C",
+    "name": "Conventional",
+    "description": "Thích các công việc có trật tự, sắp xếp, quản lý dữ liệu; tuân thủ quy trình."
+  }
+]

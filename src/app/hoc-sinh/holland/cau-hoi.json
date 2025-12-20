@@ -1,0 +1,182 @@
+[
+  {
+    "id": 1,
+    "type": "R",
+    "text": "Bạn thích làm việc với máy móc, công cụ, thiết bị, động cơ hay cơ khí?"
+  },
+  {
+    "id": 2,
+    "type": "R",
+    "text": "Bạn thích sửa chữa hoặc lắp ráp các thiết bị, máy móc?"
+  },
+  {
+    "id": 3,
+    "type": "R",
+    "text": "Bạn thích tham gia các hoạt động ngoài trời hoặc thể thao?"
+  },
+  {
+    "id": 4,
+    "type": "R",
+    "text": "Bạn thích vận hành hoặc sử dụng máy móc, thiết bị điện tử?"
+  },
+  {
+    "id": 5,
+    "type": "R",
+    "text": "Bạn thích làm việc bằng tay hoặc thử nghiệm vật liệu?"
+  },
+  {
+    "id": 6,
+    "type": "R",
+    "text": "Bạn cảm thấy hứng thú với nghề kỹ thuật hoặc nghề xây dựng?"
+  },
+  {
+    "id": 7,
+    "type": "I",
+    "text": "Bạn thích nghiên cứu và tìm hiểu các hiện tượng khoa học?"
+  },
+  {
+    "id": 8,
+    "type": "I",
+    "text": "Bạn thích phân tích số liệu hoặc dữ liệu thống kê?"
+  },
+  {
+    "id": 9,
+    "type": "I",
+    "text": "Bạn thích giải quyết các vấn đề logic hoặc toán học?"
+  },
+  {
+    "id": 10,
+    "type": "I",
+    "text": "Bạn thích đọc sách khoa học hoặc nghiên cứu chuyên sâu?"
+  },
+  {
+    "id": 11,
+    "type": "I",
+    "text": "Bạn thích làm thí nghiệm hoặc kiểm tra lý thuyết?"
+  },
+  {
+    "id": 12,
+    "type": "I",
+    "text": "Bạn thích phát triển các giải pháp sáng tạo trong khoa học?"
+  },
+  {
+    "id": 13,
+    "type": "A",
+    "text": "Bạn thích vẽ, thiết kế, hoặc trang trí?"
+  },
+  {
+    "id": 14,
+    "type": "A",
+    "text": "Bạn thích viết, kể chuyện hoặc sáng tác nhạc?"
+  },
+  {
+    "id": 15,
+    "type": "A",
+    "text": "Bạn thích biểu diễn hoặc tham gia các hoạt động nghệ thuật?"
+  },
+  {
+    "id": 16,
+    "type": "A",
+    "text": "Bạn thích sáng tạo các sản phẩm mới hoặc ý tưởng mới?"
+  },
+  {
+    "id": 17,
+    "type": "A",
+    "text": "Bạn thích phối hợp màu sắc hoặc trang trí nội thất?"
+  },
+  {
+    "id": 18,
+    "type": "A",
+    "text": "Bạn thích tham gia các câu lạc bộ nghệ thuật hoặc văn hóa?"
+  },
+  {
+    "id": 19,
+    "type": "S",
+    "text": "Bạn thích giúp đỡ, chăm sóc hoặc hướng dẫn người khác?"
+  },
+  {
+    "id": 20,
+    "type": "S",
+    "text": "Bạn thích tham gia các hoạt động cộng đồng hoặc thiện nguyện?"
+  },
+  {
+    "id": 21,
+    "type": "S",
+    "text": "Bạn thích làm việc với trẻ em hoặc người già?"
+  },
+  {
+    "id": 22,
+    "type": "S",
+    "text": "Bạn thích lắng nghe và tư vấn cho người khác?"
+  },
+  {
+    "id": 23,
+    "type": "S",
+    "text": "Bạn thích tham gia các hoạt động giáo dục hoặc đào tạo?"
+  },
+  {
+    "id": 24,
+    "type": "S",
+    "text": "Bạn thích làm việc trong nhóm để đạt mục tiêu chung?"
+  },
+  {
+    "id": 25,
+    "type": "E",
+    "text": "Bạn thích lãnh đạo hoặc thuyết phục người khác?"
+  },
+  {
+    "id": 26,
+    "type": "E",
+    "text": "Bạn thích kinh doanh hoặc quản lý các dự án?"
+  },
+  {
+    "id": 27,
+    "type": "E",
+    "text": "Bạn thích giao tiếp và thuyết trình trước đám đông?"
+  },
+  {
+    "id": 28,
+    "type": "E",
+    "text": "Bạn thích tìm kiếm cơ hội mới hoặc sáng lập doanh nghiệp?"
+  },
+  {
+    "id": 29,
+    "type": "E",
+    "text": "Bạn thích tổ chức các cuộc họp hoặc sự kiện?"
+  },
+  {
+    "id": 30,
+    "type": "E",
+    "text": "Bạn thích tạo ảnh hưởng và động viên người khác?"
+  },
+  {
+    "id": 31,
+    "type": "C",
+    "text": "Bạn thích sắp xếp, ghi chép, lưu trữ thông tin?"
+  },
+  {
+    "id": 32,
+    "type": "C",
+    "text": "Bạn thích làm việc theo quy trình và hướng dẫn rõ ràng?"
+  },
+  {
+    "id": 33,
+    "type": "C",
+    "text": "Bạn thích kiểm tra, đánh giá và theo dõi kết quả?"
+  },
+  {
+    "id": 34,
+    "type": "C",
+    "text": "Bạn thích quản lý hồ sơ và dữ liệu?"
+  },
+  {
+    "id": 35,
+    "type": "C",
+    "text": "Bạn thích hoàn thành công việc chi tiết và chính xác?"
+  },
+  {
+    "id": 36,
+    "type": "C",
+    "text": "Bạn thích tuân thủ các quy tắc và luật lệ?"
+  }
+]

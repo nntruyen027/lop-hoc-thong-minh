@@ -30,6 +30,7 @@ export default function AppHeader() {
     const menuItems = [
         {key: "/hoc-sinh/dashboard", label: "Trang chủ"},
         {key: "/hoc-sinh/huong-nghiep", label: "Hướng nghiệp"},
+        {key: "/hoc-sinh/holland", label: "Trắc nghiệm Holland"},
     ];
 
     const userMenuItems = [
