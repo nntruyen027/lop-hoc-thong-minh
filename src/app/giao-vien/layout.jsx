@@ -37,6 +37,7 @@ export default function RootLayout({children}) {
             children: [
                 {key: '/giao-vien/lop', label: 'Lớp'},
                 {key: '/giao-vien/hoc-sinh', label: 'Học sinh'},
+                {key: '/giao-vien/thoi-khoa-bieu', label: 'Thời khóa biểu'},
             ],
         },
         {

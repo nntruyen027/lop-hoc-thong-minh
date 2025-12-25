@@ -6,6 +6,9 @@ import {layStatisticGiaoVien} from "@/services/auth";
 import {useTruongLopSelect} from "@/hook/useTruongLop";
 import {Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip} from "recharts";
 import {thongKeKetQuanHollad} from "@/services/giao-vien/holland";
+import {layTkbHomNay, layTkbNgayMai} from "@/services/giao-vien/thoi-khoa-bieu";
+import TkbList from "@/app/giao-vien/dashboard/TkbList";
+
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AA336A', '#8884D8'];
 const descriptions = [
@@ -21,6 +24,10 @@ export default function Page() {
     const [data, setData] = useState();
     const [lopId, setLopId] = useState();
     const [tkHollander, setTkHollander] = useState([]);
+    const [tkbHomNay, setTkbHomNay] = useState([]);
+    const [tkbNgayMai, setTkbNgayMai] = useState([]);
+    const [loadingTkb, setLoadingTkb] = useState(false);
+
 
     const {
         dsTruong,
@@ -67,6 +74,32 @@ export default function Page() {
             fetchHolland();
         }
     }, [lopId]);
+
+    useEffect(() => {
+        const fetchTkb = async () => {
+            if (!lopId) {
+                setTkbHomNay([]);
+                setTkbNgayMai([]);
+                return;
+            }
+            try {
+                setLoadingTkb(true);
+                const [hn, nm] = await Promise.all([
+                    layTkbHomNay(lopId),
+                    layTkbNgayMai(lopId)
+                ]);
+                setTkbHomNay(hn || []);
+                setTkbNgayMai(nm || []);
+            } catch (e) {
+                console.error(e);
+            } finally {
+                setLoadingTkb(false);
+            }
+        };
+
+        fetchTkb();
+    }, [lopId]);
+
 
     return (
         <div style={{padding: 20, background: '#f0f2f5'}}>
@@ -137,9 +170,35 @@ export default function Page() {
                 </Col>
             </Row>
 
+            <Divider/>
+
+            <Row gutter={[20, 20]}>
+                <Col xs={24} md={12}>
+                    <Card
+                        title="📅 Thời khóa biểu hôm nay"
+                        loading={loadingTkb}
+                        bordered={false}
+                        style={{borderRadius: 12}}
+                    >
+                        <TkbList data={tkbHomNay}/>
+                    </Card>
+                </Col>
+
+                <Col xs={24} md={12}>
+                    <Card
+                        title="📆 Thời khóa biểu ngày mai"
+                        loading={loadingTkb}
+                        bordered={false}
+                        style={{borderRadius: 12}}
+                    >
+                        <TkbList data={tkbNgayMai}/>
+                    </Card>
+                </Col>
+            </Row>
+
 
             {/* Biểu đồ Holland + mô tả */}
-            <Row gutter={[20, 20]}>
+            <Row gutter={[20, 20]} style={{marginTop: 20, marginBottom: 20}}>
                 <Col xs={24} sm={12}>
                     <Card bordered={false}
                           style={{borderRadius: 12, padding: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.1)'}}>
