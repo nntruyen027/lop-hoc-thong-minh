@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_BE + '/hoc-sinh/thoi-khoa-bieu/',
+    baseURL: process.env.NEXT_PUBLIC_BE + '/hoc-sinh/thoi-khoa-bieu',
     headers: {
         "Content-Type": "application/json",
     }
