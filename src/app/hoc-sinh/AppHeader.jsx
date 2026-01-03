@@ -8,6 +8,7 @@ import {useEffect, useState} from "react";
 import {layThongTinCaNhanHocSinh} from "@/services/auth";
 import {layDsThongBao, xemThongBao} from "@/services/hoc-sinh/thong-bao";
 import useHocSinhOnline from "@/hook/useHocSinhOnline";
+import {renderNoiDungWithLink} from "@/utils/valid";
 
 export default function AppHeader() {
     const router = useRouter();
@@ -207,7 +208,10 @@ export default function AppHeader() {
                 <div style={{color: "#888", fontSize: 12, marginBottom: 8}}>
                     {selectedThongBao && new Date(selectedThongBao.thoiGianTao).toLocaleString()}
                 </div>
-                <div>{selectedThongBao?.noiDung}</div>
+                <div style={{lineHeight: 1.6}}>
+                    {renderNoiDungWithLink(selectedThongBao?.noiDung, router)}
+                </div>
+
             </Modal>
         </>
     );
