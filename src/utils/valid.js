@@ -7,7 +7,7 @@ export const isStrongPassword = (password) => {
 export const renderNoiDungWithLink = (text, router) => {
     if (!text) return null;
 
-    const regex = /((https?:\/\/[^\s]+)|(\/[a-zA-Z0-9\-/_?=&#.]+))/g;
+    const regex = /((?:https?:\/\/[^\s]+)|(?:\/[a-zA-Z0-9\-/_?=&#.]+))/g;
     const parts = text.split(regex);
 
     return parts.map((part, index) => {
@@ -29,7 +29,7 @@ export const renderNoiDungWithLink = (text, router) => {
             );
         }
 
-        // Link nội bộ Next.js
+        // Link nội bộ
         if (part.startsWith("/")) {
             return (
                 <a
@@ -45,7 +45,6 @@ export const renderNoiDungWithLink = (text, router) => {
             );
         }
 
-        // Text thường
         return <span key={index}>{part}</span>;
     });
 };
